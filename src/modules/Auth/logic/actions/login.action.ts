@@ -1,0 +1,29 @@
+import { defineAction, eventBus }               from '@lumiarq/framework'
+import { BaseLoginAction, type BaseLoginResult } from '@lumiarq/framework/auth'
+import type { LoginData }                        from '@/modules/Auth/contracts/validators/login.validator'
+import { IdentityRepository }                    from '@/modules/Auth/database/repositories/identity.repository'
+import { SessionRepository }                     from '@/modules/Auth/database/repositories/session.repository'
+import { UserLoggedIn }                          from '@/modules/Auth/events/definitions/user-logged-in.event'
+import { env }                                   from '@/bootstrap/env'
+import authConfig                                from '@/config/auth'
+
+const identityRepo = new IdentityRepository()
+const sessionRepo  = new SessionRepository()
+
+export const LoginAction = defineAction(
+  async (input: LoginData): Promise<BaseLoginResult> => {
+    const result = await BaseLoginAction(input, {
+      identityRepo,
+      sessionRepo,
+      jwtPrivateKey: env.JWT_PRIVATE_KEY,
+      sessionTtlMs:  authConfig.sessionTtlMs,
+    })
+
+    eventBus.emit(UserLoggedIn, {
+      identityId: result.identity.id,
+      email:      result.identity.email,
+    })
+
+    return result
+  },
+)

@@ -1,0 +1,7 @@
+import { defineModule } from '@lumiarq/framework'
+
+export default defineModule({
+  name:     'Auth',
+  alias:    'auth',
+  priority: 50,
+})
