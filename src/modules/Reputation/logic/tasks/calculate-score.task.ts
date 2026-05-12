@@ -1,0 +1,4 @@
+export const REPUTATION_POINTS = {
+  PUBLIC_PROOF_SUBMITTED: 5,
+  STREAK_30_DAYS: 10,
+} as const

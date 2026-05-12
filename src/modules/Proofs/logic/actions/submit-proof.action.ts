@@ -1,7 +1,8 @@
-import { defineAction }              from '@lumiarq/framework'
+import { defineAction, eventBus }    from '@lumiarq/framework'
 import { ProofRepository }           from '@/modules/Proofs/database/repositories/proof.repository'
 import { PracticePathRepository }    from '@/modules/Paths/Practice/database/repositories/practice-path.repository'
 import { UpdateStreakAction }         from '@/modules/Streaks/logic/actions/update-streak.action'
+import { ProofSubmitted }            from '@/modules/Proofs/events/definitions/proof-submitted.event'
 import type { SubmitProofDto }        from '@/modules/Proofs/contracts/dto/submit-proof.dto'
 import type { Proof }                 from '@/modules/Proofs/contracts/models/proof.model'
 
@@ -30,6 +31,14 @@ export const SubmitProofAction = defineAction(
 
     // Update streak
     await UpdateStreakAction(dto.practicePathId, dto.userId, proof.postedAt)
+
+    // Emit event for reputation and other listeners
+    await eventBus.emit(ProofSubmitted, {
+      proofId:        proof.id,
+      userId:         dto.userId,
+      practicePathId: dto.practicePathId,
+      isPublic:       dto.isPublic,
+    })
 
     // Check for completion: total proofs >= durationDays * frequency
     const totalProofs = await proofRepo.countByPracticePathId(dto.practicePathId)
