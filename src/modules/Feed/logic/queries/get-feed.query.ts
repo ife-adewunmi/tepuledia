@@ -24,7 +24,7 @@ export const GetFeedQuery = defineAction(
 
     const hasMore = items.length > limit
     const page = hasMore ? items.slice(0, limit) : items
-    const nextCursor = hasMore ? page[page.length - 1].id : null
+    const nextCursor = hasMore ? (page[page.length - 1]?.id ?? null) : null
 
     return { items: page, nextCursor }
   },

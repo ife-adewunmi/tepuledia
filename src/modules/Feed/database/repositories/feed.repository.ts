@@ -1,11 +1,10 @@
 import { BaseRepository } from '@lumiarq/framework'
-import { db }             from '@/bootstrap/database'
 import { proofs }         from '@/modules/Proofs/database/schemas/proof.schema'
 import { userProfiles }   from '@/modules/User/database/schemas/user.schema'
-import { eq, lt, desc }   from 'drizzle-orm'
+import { eq, desc }       from 'drizzle-orm'
 import type { FeedItem }  from '@/modules/Feed/contracts/models/feed-item.model'
 
-export class FeedRepository extends BaseRepository {
+export class FeedRepository extends BaseRepository<FeedItem, FeedItem> {
   async findPublicFeed({
     limit = 20,
     cursor,
@@ -13,7 +12,7 @@ export class FeedRepository extends BaseRepository {
     limit?: number
     cursor?: string
   }): Promise<FeedItem[]> {
-    const rows = await db
+    const rows = await this.db
       .select({
         id:             proofs.id,
         practicePathId: proofs.practicePathId,
@@ -56,29 +55,28 @@ export class FeedRepository extends BaseRepository {
     }))
   }
 
-  // --- BaseRepository abstract method implementations ---
-  async findById(id: string) {
-    const rows = await db
+  async findById(id: string): Promise<FeedItem | null> {
+    const rows = await this.db
       .select()
       .from(proofs)
       .where(eq(proofs.id, id))
       .limit(1)
-    return rows[0] ?? null
+    return (rows[0] as unknown as FeedItem) ?? null
   }
 
-  async findAll() {
-    return db.select().from(proofs)
+  async findAll(): Promise<FeedItem[]> {
+    return (await this.db.select().from(proofs)) as unknown as FeedItem[]
   }
 
-  async create(data: Record<string, unknown>) {
+  async create(data: FeedItem): Promise<FeedItem> {
     return data
   }
 
-  async update(id: string, data: Record<string, unknown>) {
-    return { id, ...data }
+  async update(_id: string, data: FeedItem): Promise<FeedItem> {
+    return data
   }
 
-  async delete(id: string) {
-    return { id }
+  async delete(_id: string): Promise<void> {
+    // no-op for feed read model
   }
 }

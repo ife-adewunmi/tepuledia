@@ -1,6 +1,5 @@
-import { defineAction }          from '@lumiarq/framework'
-import { db }                    from '@/bootstrap/database'
-import { userProfiles }          from '@/modules/User/database/schemas/user.schema'
+import { defineAction, getConnection } from '@lumiarq/framework'
+import { userProfiles }                from '@/modules/User/database/schemas/user.schema'
 import { eq, sql }               from 'drizzle-orm'
 import { REPUTATION_POINTS }     from '@/modules/Reputation/logic/tasks/calculate-score.task'
 
@@ -13,6 +12,7 @@ export const AwardReputationAction = defineAction(
   async (input: AwardReputationInput): Promise<void> => {
     const points = REPUTATION_POINTS[input.reason]
 
+    const db = getConnection()
     await db
       .update(userProfiles)
       .set({
